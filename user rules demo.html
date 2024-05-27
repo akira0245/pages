@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit User Rules</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .rule-container {
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .rule-container h3 {
+            margin-top: 0;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+        }
+        button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Edit User Rules</h1>
+    <div id="rules"></div>
+    <button onclick="addRule()">添加新规则</button>
+    <button onclick="generateJSON()">生成 JSON</button>
+
+    <script>
+        let ruleCounter = 0;
+
+        function addRule() {
+            ruleCounter++;
+            const ruleContainer = document.createElement('div');
+            ruleContainer.className = 'rule-container';
+            ruleContainer.id = `rule-${ruleCounter}`;
+            ruleContainer.innerHTML = `
+                <h3>规则 ${ruleCounter}</h3>
+                <label for="matches-${ruleCounter}">匹配网址</label>
+                <input type="text" id="matches-${ruleCounter}" placeholder="如: www.example.com">
+                
+                <label for="selectors-${ruleCounter}">包含选择器</label>
+                <textarea id="selectors-${ruleCounter}" placeholder="如: .title"></textarea>
+                
+                <label for="excludeSelectors-${ruleCounter}">排除选择器</label>
+                <textarea id="excludeSelectors-${ruleCounter}" placeholder="如: .nav, .footer"></textarea>
+                
+                <label for="atomicBlockSelectors-${ruleCounter}">整体选择器</label>
+                <textarea id="atomicBlockSelectors-${ruleCounter}" placeholder="如: .profile-header"></textarea>
+                
+                <label for="globalStyles-${ruleCounter}">全局样式</label>
+                <textarea id="globalStyles-${ruleCounter}" placeholder="如: .title { max-height: unset; }"></textarea>
+                
+                <button onclick="removeRule(${ruleCounter})">删除规则</button>
+            `;
+            document.getElementById('rules').appendChild(ruleContainer);
+        }
+
+        function removeRule(id) {
+            const ruleContainer = document.getElementById(`rule-${id}`);
+            ruleContainer.parentNode.removeChild(ruleContainer);
+        }
+
+        function generateJSON() {
+            const rules = [];
+            for (let i = 1; i <= ruleCounter; i++) {
+                const ruleContainer = document.getElementById(`rule-${i}`);
+                if (ruleContainer) {
+                    const matches = document.getElementById(`matches-${i}`).value;
+                    const selectors = document.getElementById(`selectors-${i}`).value.split(',');
+                    const excludeSelectors = document.getElementById(`excludeSelectors-${i}`).value.split(',');
+                    const atomicBlockSelectors = document.getElementById(`atomicBlockSelectors-${i}`).value.split(',');
+                    const globalStyles = document.getElementById(`globalStyles-${i}`).value;
+
+                    const rule = {
+                        matches,
+                        selectors: selectors.map(s => s.trim()),
+                        excludeSelectors: excludeSelectors.map(s => s.trim()),
+                        atomicBlockSelectors: atomicBlockSelectors.map(s => s.trim()),
+                        globalStyles: globalStyles ? { [globalStyles.split('{')[0].trim()]: globalStyles.split('{')[1].replace('}', '').trim() } : undefined
+                    };
+                    rules.push(rule);
+                }
+            }
+            alert(JSON.stringify(rules, null, 2));
+        }
+    </script>
+</body>
+</html>
